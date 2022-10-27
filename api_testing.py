@@ -3,6 +3,7 @@ import json
 
 # MarkerDB
 def markerdb_get(req_type,
+                 QUERY=None,
                  NAME=None,
                  PAGE=None,
                  MARKERDB_ID=None,
@@ -13,8 +14,8 @@ def markerdb_get(req_type,
     API_KEY = "cc69fb7c1a4809bbae7c0701d5188c17"
 
     if req_type == "condition":
-        URL += "geneapi/generequest"
-        PARAMS = { 'api_key': API_KEY, 'name': NAME, 'page': PAGE }
+        URL += "conditionapi/conditionrequest"
+        PARAMS = { 'api_key': API_KEY, 'query': QUERY, 'page': PAGE }
     elif req_type == "chemical":
         URL += "chemicalapi/chemicalrequest"
         PARAMS = { 'api_key': API_KEY, 'name': NAME, 'markerdb_id': MARKERDB_ID, 'page': PAGE }
@@ -34,7 +35,7 @@ def markerdb_get(req_type,
         print("Invalid request type!")
 
     r = requests.get(url=URL, params=PARAMS)
-    return json.dumps(r.json(), sort_keys=True, indent=2)
+    return r.json()
 
 
 def fetch_all_info(condition_name):
