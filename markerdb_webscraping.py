@@ -73,9 +73,8 @@ def save_gene_sequences(biomarker_ids, requests_session):
         time.sleep(1)                                   # Prevent NCBI from closing connection due to frequency of efetch requests
         print(fasta_filename + " saved!")
 
-def scrape_marker_db():
+def scrape_marker_db(user_input):
     requests_session = requests.Session()
-    user_input = "Usher Syndrome Type I"
     Entrez.email = "raphaelpham14@gmail.com"
 
     condition_html = markerdb_get("condition", QUERY=user_input, PAGE=1)['conditions'][0]
@@ -85,5 +84,5 @@ def scrape_marker_db():
     print("Biomarker IDs: " + str(biomarker_ids))
     save_gene_sequences(biomarker_ids, requests_session)
 
-if __name__ == "__main__":
-    scrape_marker_db()
+#if __name__ == "__main__":
+#    scrape_marker_db("Usher Syndrome Type I")
