@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 import lxml
@@ -84,5 +85,5 @@ def scrape_marker_db(user_input):
     print("Biomarker IDs: " + str(biomarker_ids))
     save_gene_sequences(biomarker_ids, requests_session)
 
-#if __name__ == "__main__":
-#    scrape_marker_db("Usher Syndrome Type I")
+if __name__ == "__main__":
+    scrape_marker_db("Usher Syndrome Type I")

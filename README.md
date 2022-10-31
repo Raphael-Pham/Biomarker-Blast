@@ -1,1 +1,4 @@
 # BIO442_Group2
+
+BEFORE RUNNING, EXECUTE:
+export PYTHONPATH="$PWD/packages"
