@@ -7,6 +7,7 @@ import cchardet
 import re
 import time
 from Bio import Entrez, SeqIO
+from Bio.SeqIO import FastaIO
 
 from markerdb_api import markerdb_get
 import constants
@@ -70,9 +71,19 @@ def save_gene_sequences(biomarker_ids, requests_session):
 
         handle = Entrez.efetch(db='nuccore', id=accession_num, seq_start=from_idx, seq_stop=to_idx, rettype='fasta', retmode='text')
         fasta_filename = "/genbank_fasta/" + accession_num + '_' + from_idx + '_' + "to" + '_' + to_idx + ".fasta"
-        SeqIO.write(SeqIO.read(handle, 'fasta'), os.path.dirname(os.path.realpath(__file__)) + fasta_filename, 'fasta')
+        
+        data = SeqIO.read(handle, 'fasta')
+        fasta_out = FastaIO.FastaWriter(os.path.dirname(os.path.realpath(__file__)) + fasta_filename, wrap=None)
+        for record in data:
+            fasta_out.write_record(record)
+        
+        #print(SeqIO.read(handle, 'fasta'))
+        #fasta_out = FastaIO.FastaWriter(os.path.dirname(os.path.realpath(__file__)) + fasta_filename, wrap=None)
+        #fasta_out.write_file(SeqIO.read(handle, 'fasta'))
+        #SeqIO.write(SeqIO.read(handle, 'fasta'), os.path.dirname(os.path.realpath(__file__)) + fasta_filename, 'fasta')
         time.sleep(1)                                   # Prevent NCBI from closing connection due to frequency of efetch requests
-        print(fasta_filename + " saved!")
+        #print(fasta_filename + " saved!")
+        break
 
 def scrape_marker_db(user_input):
     requests_session = requests.Session()
@@ -86,4 +97,4 @@ def scrape_marker_db(user_input):
     save_gene_sequences(biomarker_ids, requests_session)
 
 if __name__ == "__main__":
-    scrape_marker_db("Usher Syndrome Type I")
+    scrape_marker_db(' '.join(sys.argv[1:]))
