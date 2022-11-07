@@ -62,7 +62,7 @@ def save_gene_sequences(biomarker_ids, requests_session):
     for biomarker_id in biomarker_ids:
         soup = build_soup(constants.GENBANK_GENE + biomarker_id, requests_session, "genbank")
         ncbi_string = r'(.*)ncbi_uid=' + re.escape(str(biomarker_id)) + r'(.*)report=fasta'
-        
+
         file_extension = soup.find_all('a', ref=re.compile(ncbi_string), limit=1)[0]['href']
         accession_num = file_extension[9:].split('?')[0]
         from_to = file_extension.split('&')
@@ -71,19 +71,9 @@ def save_gene_sequences(biomarker_ids, requests_session):
 
         handle = Entrez.efetch(db='nuccore', id=accession_num, seq_start=from_idx, seq_stop=to_idx, rettype='fasta', retmode='text')
         fasta_filename = "/genbank_fasta/" + accession_num + '_' + from_idx + '_' + "to" + '_' + to_idx + ".fasta"
-        
-        data = SeqIO.read(handle, 'fasta')
-        fasta_out = FastaIO.FastaWriter(os.path.dirname(os.path.realpath(__file__)) + fasta_filename, wrap=None)
-        for record in data:
-            fasta_out.write_record(record)
-        
-        #print(SeqIO.read(handle, 'fasta'))
-        #fasta_out = FastaIO.FastaWriter(os.path.dirname(os.path.realpath(__file__)) + fasta_filename, wrap=None)
-        #fasta_out.write_file(SeqIO.read(handle, 'fasta'))
-        #SeqIO.write(SeqIO.read(handle, 'fasta'), os.path.dirname(os.path.realpath(__file__)) + fasta_filename, 'fasta')
+        SeqIO.write(SeqIO.read(handle, 'fasta'), os.path.dirname(os.path.realpath(__file__)) + fasta_filename, 'fasta')
         time.sleep(1)                                   # Prevent NCBI from closing connection due to frequency of efetch requests
-        #print(fasta_filename + " saved!")
-        break
+        print(fasta_filename + " saved!")
 
 def scrape_marker_db(user_input):
     requests_session = requests.Session()
