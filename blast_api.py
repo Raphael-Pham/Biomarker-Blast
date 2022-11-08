@@ -31,18 +31,26 @@ def blast_sequences(input_seq, query_seq, db):
 
 def main():
     blastn_path = os.path.dirname(os.path.realpath(__file__)) + "/packages/blast-BLAST_VERSION+/bin/blastn.exe"
-    output = NcbiblastnCommandline(cmd=blastn_path, query=FILE_1, subject=FILE_2, outfmt=5)()[0]
+    output = NcbiblastnCommandline(cmd=blastn_path, query=FILE_1, subject=FILE_2, task="blastn", evalue=0.000002, outfmt=5)()[0]
     blast_output_record = NCBIXML.read(StringIO(output))
+
+    
+    i = 0
     for alignment in blast_output_record.alignments:
+        print()
+        print("---------Alignment--------")
+        print("alignment name:', alignment.title")
+        print("alignment length:", alignment.length)
         for hsp in alignment.hsps:
-            print()
-            print('****Alignment****')
-            print('sequence:', alignment.title)
-            print('length:', alignment.length)
-            print('e value:', hsp.expect)
-            print(hsp.query)
-            print(hsp.match)
-            print(hsp.sbjct)
+            print("--HSP--")
+            print("score:", hsp.score)
+            print("expect val:", hsp.expect)
+            print("percent identity:", hsp.identities / hsp.align_length * 100)
+            print("gap percentage:", hsp.gaps / hsp.align_length)
+            print("align length:", hsp.align_length)
+            i += 1
+            if i == 5:
+                break
 
 if __name__ == "__main__":
     main()
