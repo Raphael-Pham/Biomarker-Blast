@@ -36,9 +36,3 @@ def markerdb_get(req_type,
 
     r = requests.get(url=URL, params=PARAMS)
     return r.json()
-
-def main():
-    print(markerdb_get("chemical", NAME="1-Methylhistidine", MARKERDB_ID="MDB00000001", PAGE=1))
-
-if __name__ == '__main__':
-    main()

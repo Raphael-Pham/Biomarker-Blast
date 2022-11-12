@@ -59,6 +59,9 @@ def get_biomarker_ids(condition_id, requests_session):
 def save_gene_sequences(biomarker_ids, requests_session):
     print()
     print("Saving fasta files...")
+    saved_file_names = []
+    saved_fastas = open('saved_fasta_names.txt', 'w')
+
     for biomarker_id in biomarker_ids:
         soup = build_soup(constants.GENBANK_GENE + biomarker_id, requests_session, "genbank")
         ncbi_string = r'(.*)ncbi_uid=' + re.escape(str(biomarker_id)) + r'(.*)report=fasta'
@@ -74,6 +77,10 @@ def save_gene_sequences(biomarker_ids, requests_session):
         SeqIO.write(SeqIO.read(handle, 'fasta'), os.path.dirname(os.path.realpath(__file__)) + fasta_filename, 'fasta')
         time.sleep(1)                                   # Prevent NCBI from closing connection due to frequency of efetch requests
         print(fasta_filename + " saved!")
+        saved_file_names.append(fasta_filename[1:] + "\n")
+    
+    saved_fastas.writelines(saved_file_names)
+    saved_fastas.close()
 
 def scrape_marker_db(user_input):
     requests_session = requests.Session()
