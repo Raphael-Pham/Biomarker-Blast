@@ -1,6 +1,6 @@
-genbank_fasta/NG_009086.2_5001_to_91996.fasta
-genbank_fasta/NG_011883.2_5001_to_55517.fasta
-genbank_fasta/NG_015866.1_4989_to_41157.fasta
 genbank_fasta/NG_009191.3_832952_to_1831412.fasta
-genbank_fasta/NG_007882.2_5009_to_12181.fasta
+genbank_fasta/NG_009086.2_5001_to_91996.fasta
+genbank_fasta/NG_015866.1_4989_to_41157.fasta
 genbank_fasta/NG_008835.1_4974_to_424001.fasta
+genbank_fasta/NG_007882.2_5009_to_12181.fasta
+genbank_fasta/NG_011883.2_5001_to_55517.fasta

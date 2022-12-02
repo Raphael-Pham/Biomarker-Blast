@@ -12,6 +12,9 @@
 
 You are expected to use this module via the Bio.SeqIO functions.
 """
+import warnings
+
+from Bio import BiopythonDeprecationWarning
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
@@ -143,9 +146,9 @@ class FastaIterator(SequenceIterator):
         Arguments:
          - source - input stream opened in text mode, or a path to a file
          - alphabet - optional alphabet, not used. Leave as None.
-         - title2ids - A function that, when given the title of the FASTA
-           file (without the beginning >), will return the id, name and
-           description (in that order) for the record as a tuple of strings.
+         - title2ids (DEPRECATED) - A function that, when given the title of
+           the FASTA file (without the beginning >), will return the id, name
+           and description (in that order) for the record as a tuple of strings.
            If this is not given, then the entire title line will be used
            as the description, and the first word as the id and name.
 
@@ -162,7 +165,7 @@ class FastaIterator(SequenceIterator):
         alpha
         delta
 
-        However, you can supply a title2ids function to alter this:
+        However, you can supply a title2ids function to alter this (DEPRECATED):
 
         >>> def take_upper(title):
         ...     return title.split(None, 1)[0].upper(), "", title
@@ -176,9 +179,46 @@ class FastaIterator(SequenceIterator):
         ALPHA
         DELTA
 
+        Instead of title2ids, please use a generator function to modify the
+        records:
+
+        >>> def modify_records(records):
+        ...     for record in records:
+        ...         record.id = record.id.upper()
+        ...         yield record
+        ...
+        >>> with open('Fasta/dups.fasta') as handle:
+        ...     for record in modify_records(FastaIterator(handle)):
+        ...         print(record.id)
+        ...
+        ALPHA
+        BETA
+        GAMMA
+        ALPHA
+        DELTA
+
         """
         if alphabet is not None:
             raise ValueError("The alphabet argument is no longer supported")
+        if title2ids is not None:
+            warnings.warn(
+                "The title2ids argument is deprecated. Instead, please use a "
+                "generator function to modify records returned by the parser. "
+                "For example, to change the record IDs to uppercase, and "
+                "delete the description attribute, use\n"
+                "\n"
+                ">>> def modify_records(records):\n"
+                "...     for record in records:\n"
+                "...         record.id = record.id.upper()\n"
+                "...         del record.description\n"
+                "...         yield record\n"
+                "...\n"
+                ">>> with open('Fasta/dups.fasta') as handle:\n"
+                "...     for record in modify_records(FastaIterator(handle)):\n"
+                "...         print(record)\n"
+                "\n",
+                BiopythonDeprecationWarning,
+            )
         self.title2ids = title2ids
         super().__init__(source, mode="t", fmt="Fasta")
 
@@ -203,7 +243,7 @@ class FastaIterator(SequenceIterator):
                     # Should we use SeqRecord default for no ID?
                     first_word = ""
                 yield SeqRecord(
-                    Seq(sequence), id=first_word, name=first_word, description=title,
+                    Seq(sequence), id=first_word, name=first_word, description=title
                 )
 
 
@@ -239,7 +279,7 @@ class FastaTwoLineIterator(SequenceIterator):
                 # Should we use SeqRecord default for no ID?
                 first_word = ""
             yield SeqRecord(
-                Seq(sequence), id=first_word, name=first_word, description=title,
+                Seq(sequence), id=first_word, name=first_word, description=title
             )
 
 
@@ -302,13 +342,13 @@ class FastaWriter(SequenceWriter):
                 # The description includes the id at the start
                 title = description
             elif description:
-                title = "%s %s" % (id, description)
+                title = f"{id} {description}"
             else:
                 title = id
 
         assert "\n" not in title
         assert "\r" not in title
-        self.handle.write(">%s\n" % title)
+        self.handle.write(f">{title}\n")
 
         data = _get_seq_string(record)  # Catches sequence being None
 
@@ -379,12 +419,12 @@ def as_fasta(record):
         # The description includes the id at the start
         title = description
     elif description:
-        title = "%s %s" % (id, description)
+        title = f"{id} {description}"
     else:
         title = id
     assert "\n" not in title
     assert "\r" not in title
-    lines = [">%s\n" % title]
+    lines = [f">{title}\n"]
 
     data = _get_seq_string(record)  # Catches sequence being None
     assert "\n" not in data
@@ -407,7 +447,7 @@ def as_fasta_2line(record):
         # The description includes the id at the start
         title = description
     elif description:
-        title = "%s %s" % (id, description)
+        title = f"{id} {description}"
     else:
         title = id
     assert "\n" not in title
@@ -417,7 +457,7 @@ def as_fasta_2line(record):
     assert "\n" not in data
     assert "\r" not in data
 
-    return ">%s\n%s\n" % (title, data)
+    return f">{title}\n{data}\n"
 
 
 if __name__ == "__main__":

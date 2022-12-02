@@ -11,6 +11,7 @@
 # In particular, the SeqRecord and BioSQL.BioSeq.DBSeqRecord classes
 # need to be in sync (this is the BioSQL "Database SeqRecord").
 from io import StringIO
+import numbers
 
 from Bio import StreamModeError
 from Bio.Seq import UndefinedSequenceError
@@ -213,7 +214,7 @@ class SeqRecord:
         if annotations is None:
             annotations = {}
         elif not isinstance(annotations, dict):
-            raise TypeError("annotations argument should be a dict")
+            raise TypeError("annotations argument must be a dict or None")
         self.annotations = annotations
 
         if letter_annotations is None:
@@ -365,13 +366,13 @@ class SeqRecord:
 
         >>> from Bio.Seq import Seq
         >>> from Bio.SeqRecord import SeqRecord
-        >>> from Bio.SeqFeature import SeqFeature, FeatureLocation
+        >>> from Bio.SeqFeature import SeqFeature, SimpleLocation
         >>> rec = SeqRecord(Seq("MAAGVKQLADDRTLLMAGVSHDLRTPLTRIRLAT"
         ...                     "EMMSEQDGYLAESINKDIEECNAIIEQFIDYLR"),
         ...                 id="1JOY", name="EnvZ",
         ...                 description="Homodimeric domain of EnvZ from E. coli")
         >>> rec.letter_annotations["secondary_structure"] = "  S  SSSSSSHHHHHTTTHHHHHHHHHHHHHHHHHHHHHHTHHHHHHHHHHHHHHHHHHHHHTT  "
-        >>> rec.features.append(SeqFeature(FeatureLocation(20, 21),
+        >>> rec.features.append(SeqFeature(SimpleLocation(20, 21),
         ...                     type = "Site"))
 
         Now let's have a quick look at the full record,
@@ -444,7 +445,7 @@ class SeqRecord:
         >>> rec.seq[5]
         'K'
         """
-        if isinstance(index, int):
+        if isinstance(index, numbers.Integral):
             # NOTE - The sequence level annotation like the id, name, etc
             # do not really apply to a single character.  However, should
             # we try and expose any per-letter-annotation here?  If so how?
@@ -504,11 +505,12 @@ class SeqRecord:
                             "from segmented GenBank records) are ignored."
                         )
                         continue
-                    if (
-                        start <= f.location.nofuzzy_start
-                        and f.location.nofuzzy_end <= stop
-                    ):
-                        answer.features.append(f._shift(-start))
+                    try:
+                        if start <= f.location.start and f.location.end <= stop:
+                            answer.features.append(f._shift(-start))
+                    except TypeError:
+                        # Will fail on UnknownPosition
+                        pass
 
             # Slice all the values to match the sliced sequence
             # (this should also work with strides, even negative strides):
@@ -604,7 +606,7 @@ class SeqRecord:
     def __str__(self):
         """Return a human readable summary of the record and its annotation (string).
 
-        The python built in function str works by calling the object's ___str__
+        The python built in function str works by calling the object's __str__
         method.  e.g.
 
         >>> from Bio.Seq import Seq
@@ -619,7 +621,7 @@ class SeqRecord:
         Number of features: 0
         Seq('MKQHKAMIVALIVICITAVVAALVTRKDLCEVHIRTGQTEVAVF')
 
-        In this example you don't actually need to call str explicity, as the
+        In this example you don't actually need to call str explicitly, as the
         print command does this automatically:
 
         >>> print(record)
@@ -660,7 +662,7 @@ class SeqRecord:
     def __repr__(self):
         """Return a concise summary of the record for debugging (string).
 
-        The python built in function repr works by calling the object's ___repr__
+        The python built in function repr works by calling the object's __repr__
         method.  e.g.
 
         >>> from Bio.Seq import Seq
@@ -720,7 +722,6 @@ class SeqRecord:
         and binary formats are not supported).
         """
         # See also the __format__ method
-        # See also the Bio.Align.Generic.Alignment class and its format()
         return self.__format__(format)
 
     def __format__(self, format_spec):
@@ -785,7 +786,7 @@ class SeqRecord:
         """Define the less-than operand (not implemented)."""
         raise NotImplementedError(_NO_SEQRECORD_COMPARISON)
 
-    def __le___(self, other):
+    def __le__(self, other):
         """Define the less-than-or-equal-to operand (not implemented)."""
         raise NotImplementedError(_NO_SEQRECORD_COMPARISON)
 
@@ -968,6 +969,14 @@ class SeqRecord:
             dbxrefs=self.dbxrefs[:],
         )
 
+    def count(self, sub, start=None, end=None):
+        """Return the number of non-overlapping occurrences of sub in seq[start:end].
+
+        Optional arguments start and end are interpreted as in slice notation.
+        This method behaves as the count method of Python strings.
+        """
+        return self.seq.count(sub, start, end)
+
     def upper(self):
         """Return a copy of the record with an upper case sequence.
 
@@ -1047,6 +1056,20 @@ class SeqRecord:
             annotations=self.annotations.copy(),
             letter_annotations=self.letter_annotations.copy(),
         )
+
+    def isupper(self):
+        """Return True if all ASCII characters in the record's sequence are uppercase.
+
+        If there are no cased characters, the method returns False.
+        """
+        return self.seq.isupper()
+
+    def islower(self):
+        """Return True if all ASCII characters in the record's sequence are lowercase.
+
+        If there are no cased characters, the method returns False.
+        """
+        return self.seq.islower()
 
     def reverse_complement(
         self,
@@ -1204,18 +1227,17 @@ class SeqRecord:
         if "protein" in self.annotations.get("molecule_type", ""):
             raise ValueError("Proteins do not have complements!")
         if "RNA" in self.annotations.get("molecule_type", ""):
-            if isinstance(self.seq, MutableSeq):
-                # Does not currently have reverse_complement_rna method:
-                answer = SeqRecord(Seq(self.seq).reverse_complement_rna())
-            else:
-                answer = SeqRecord(self.seq.reverse_complement_rna())
+            seq = self.seq.reverse_complement_rna(
+                inplace=False
+            )  # TODO: remove inplace=False
         else:
-            # Default to DNA
-            if isinstance(self.seq, MutableSeq):
-                # Currently the MutableSeq reverse complement is in situ
-                answer = SeqRecord(Seq(self.seq).reverse_complement())
-            else:
-                answer = SeqRecord(self.seq.reverse_complement())
+            # Default to DNA)
+            seq = self.seq.reverse_complement(
+                inplace=False
+            )  # TODO: remove inplace=False
+        if isinstance(self.seq, MutableSeq):
+            seq = Seq(seq)
+        answer = SeqRecord(seq)
         if isinstance(id, str):
             answer.id = id
         elif id:
@@ -1244,7 +1266,15 @@ class SeqRecord:
             # so we need to resort in case of overlapping features.
             # NOTE - In the common case of gene before CDS (and similar) with
             # the exact same locations, this will still maintain gene before CDS
-            answer.features.sort(key=lambda x: x.location.start.position)
+
+            def key_fun(f):
+                """Sort on start position."""
+                try:
+                    return int(f.location.start)
+                except TypeError:  # Expected for UnknownPosition
+                    return None
+
+            answer.features.sort(key=key_fun)
         if isinstance(annotations, dict):
             answer.annotations = annotations
         elif annotations:
@@ -1348,7 +1378,7 @@ class SeqRecord:
             answer.features = features
         elif features:
             # Does not make sense to copy old features as locations wrong
-            raise TypeError("Unexpected features argument %r" % features)
+            raise TypeError(f"Unexpected features argument {features!r}")
         if isinstance(annotations, dict):
             answer.annotations = annotations
         elif annotations:
@@ -1361,7 +1391,7 @@ class SeqRecord:
         elif letter_annotations:
             # Does not make sense to copy these as length now wrong
             raise TypeError(
-                "Unexpected letter_annotations argument %r" % letter_annotations
+                f"Unexpected letter_annotations argument {letter_annotations!r}"
             )
         return answer
 

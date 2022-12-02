@@ -12,6 +12,7 @@ and position-specific scoring matrices.
 """
 
 import math
+import numbers
 
 try:
     import numpy as np
@@ -63,7 +64,7 @@ class GenericPositionMatrix(dict):
                     indices1 = range(start1, stop1, stride1)
                     letters1 = [self.alphabet[i] for i in indices1]
                     dim1 = 2
-                elif isinstance(key1, int):
+                elif isinstance(key1, numbers.Integral):
                     letter1 = self.alphabet[key1]
                     dim1 = 1
                 elif isinstance(key1, tuple):
@@ -81,7 +82,7 @@ class GenericPositionMatrix(dict):
                     start2, stop2, stride2 = key2.indices(self.length)
                     indices2 = range(start2, stop2, stride2)
                     dim2 = 2
-                elif isinstance(key2, int):
+                elif isinstance(key2, numbers.Integral):
                     index2 = key2
                     dim2 = 1
                 else:
@@ -114,7 +115,7 @@ class GenericPositionMatrix(dict):
             indices = range(start, stop, stride)
             letters = [self.alphabet[i] for i in indices]
             dim = 2
-        elif isinstance(key, int):
+        elif isinstance(key, numbers.Integral):
             letter = self.alphabet[key]
             dim = 1
         elif isinstance(key, tuple):
@@ -195,7 +196,7 @@ class GenericPositionMatrix(dict):
         for i in range(self.length):
 
             def get(nucleotide):
-                return self[nucleotide][i]
+                return self[nucleotide][i]  # noqa: B023
 
             nucleotides = sorted(self, key=get, reverse=True)
             counts = [self[c][i] for c in nucleotides]
@@ -279,7 +280,7 @@ class PositionWeightMatrix(GenericPositionMatrix):
         """Initialize the class."""
         GenericPositionMatrix.__init__(self, alphabet, counts)
         for i in range(self.length):
-            total = sum(float(self[letter][i]) for letter in alphabet)
+            total = sum(self[letter][i] for letter in alphabet)
             for letter in alphabet:
                 self[letter][i] /= total
         for letter in alphabet:
@@ -379,7 +380,7 @@ class PositionSpecificScoringMatrix(GenericPositionMatrix):
         else:
             return scores
 
-    def search(self, sequence, threshold=0.0, both=True, chunksize=10 ** 6):
+    def search(self, sequence, threshold=0.0, both=True, chunksize=10**6):
         """Find hits with PWM score above given threshold.
 
         A generator function, returning found hits in the given sequence
@@ -536,7 +537,7 @@ class PositionSpecificScoringMatrix(GenericPositionMatrix):
         denominator = math.sqrt((sxx - sx * sx) * (syy - sy * sy))
         return numerator / denominator
 
-    def distribution(self, background=None, precision=10 ** 3):
+    def distribution(self, background=None, precision=10**3):
         """Calculate the distribution of the scores at the given precision."""
         from .thresholds import ScoreDistribution
 

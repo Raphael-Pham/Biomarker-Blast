@@ -20,38 +20,6 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 
-def _make_position(location_string, offset=0):
-    """Turn a Swiss location position into a SeqFeature position object (PRIVATE).
-
-    An offset of -1 is used with a start location to make it pythonic.
-    """
-    if location_string == "?":
-        return SeqFeature.UnknownPosition()
-    # Hack so that feature from 0 to 0 becomes 0 to 0, not -1 to 0.
-    try:
-        return SeqFeature.ExactPosition(max(0, offset + int(location_string)))
-    except ValueError:
-        pass
-    if location_string.startswith("<"):
-        try:
-            return SeqFeature.BeforePosition(max(0, offset + int(location_string[1:])))
-        except ValueError:
-            pass
-    elif location_string.startswith(">"):  # e.g. ">13"
-        try:
-            return SeqFeature.AfterPosition(max(0, offset + int(location_string[1:])))
-        except ValueError:
-            pass
-    elif location_string.startswith("?"):  # e.g. "?22"
-        try:
-            return SeqFeature.UncertainPosition(
-                max(0, offset + int(location_string[1:]))
-            )
-        except ValueError:
-            pass
-    raise NotImplementedError("Cannot parse location '%s'" % location_string)
-
-
 def SwissIterator(source):
     """Break up a Swiss-Prot/UniProt file into SeqRecord objects.
 
@@ -86,7 +54,7 @@ def SwissIterator(source):
             if len(cross_reference) < 2:
                 continue
             database, accession = cross_reference[:2]
-            dbxref = "%s:%s" % (database, accession)
+            dbxref = f"{database}:{accession}"
             if dbxref not in record.dbxrefs:
                 record.dbxrefs.append(dbxref)
         annotations = record.annotations
@@ -132,7 +100,7 @@ def SwissIterator(source):
                     elif key == "AGRICOLA":
                         pass
                     else:
-                        raise ValueError("Unknown key %s found in references" % key)
+                        raise ValueError(f"Unknown key {key} found in references")
                 feature.authors = reference.authors
                 feature.title = reference.title
                 feature.journal = reference.location

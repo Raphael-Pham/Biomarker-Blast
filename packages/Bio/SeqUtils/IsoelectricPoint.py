@@ -6,7 +6,7 @@
 # package.
 """Calculate isoelectric points of polypeptides using methods of Bjellqvist.
 
-pK values and the methos are taken from::
+pK values and the methods are taken from::
 
     * Bjellqvist, B.,Hughes, G.J., Pasquali, Ch., Paquet, N., Ravier, F.,
     Sanchez, J.-Ch., Frutiger, S. & Hochstrasser, D.F.
@@ -81,7 +81,7 @@ class IsoelectricPoint:
 
     def __init__(self, protein_sequence, aa_content=None):
         """Initialize the class."""
-        self.sequence = str(protein_sequence).upper()
+        self.sequence = protein_sequence.upper()
         if not aa_content:
             from Bio.SeqUtils.ProtParam import ProteinAnalysis as _PA
 

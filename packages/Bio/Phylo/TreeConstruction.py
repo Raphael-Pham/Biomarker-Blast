@@ -67,7 +67,7 @@ class _Matrix:
     >>> m[0,1]
     7
 
-    Also you can delete or insert a column&row of elemets by index.
+    Also you can delete or insert a column&row of elements by index.
 
     >>> m
     _Matrix(names=['Alpha', 'Beta', 'Gamma', 'Delta'], matrix=[[0], [7, 0], [8, 4, 0], [9, 5, 6, 0]])
@@ -104,16 +104,15 @@ class _Matrix:
             # check if all elements are numbers
             if (
                 isinstance(matrix, list)
-                and all(isinstance(l, list) for l in matrix)
+                and all(isinstance(row, list) for row in matrix)
                 and all(
-                    isinstance(n, numbers.Number)
-                    for n in [item for sublist in matrix for item in sublist]
+                    isinstance(item, numbers.Number) for row in matrix for item in row
                 )
             ):
                 # check if the same length with names
                 if len(matrix) == len(names):
                     # check if is lower triangle format
-                    if [len(m) for m in matrix] == list(range(1, len(self) + 1)):
+                    if [len(row) for row in matrix] == list(range(1, len(self) + 1)):
                         self.matrix = matrix
                     else:
                         raise ValueError("'matrix' should be in lower triangle format")
@@ -499,22 +498,20 @@ class DistanceCalculator:
                     max_score1 += self.scoring_matrix[l1, l1]
                 except IndexError:
                     raise ValueError(
-                        "Bad letter '%s' in sequence '%s' at position '%s'"
-                        % (l1, seq1.id, i)
+                        f"Bad letter '{l1}' in sequence '{seq1.id}' at position '{i}'"
                     ) from None
                 try:
                     max_score2 += self.scoring_matrix[l2, l2]
                 except IndexError:
                     raise ValueError(
-                        "Bad letter '%s' in sequence '%s' at position '%s'"
-                        % (l2, seq2.id, i)
+                        f"Bad letter '{l2}' in sequence '{seq2.id}' at position '{i}'"
                     ) from None
                 score += self.scoring_matrix[l1, l2]
             # Take the higher score if the matrix is asymmetrical
             max_score = max(max_score1, max_score2)
         if max_score == 0:
             return 1  # max possible scaled distance
-        return 1 - (score * 1.0 / max_score)
+        return 1 - (score / max_score)
 
     def get_distance(self, msa):
         """Return a DistanceMatrix for MSA object.
@@ -676,14 +673,14 @@ class DistanceTreeConstructor(TreeConstructor):
             inner_clade.clades.append(clade2)
             # assign branch length
             if clade1.is_terminal():
-                clade1.branch_length = min_dist * 1.0 / 2
+                clade1.branch_length = min_dist / 2
             else:
-                clade1.branch_length = min_dist * 1.0 / 2 - self._height_of(clade1)
+                clade1.branch_length = min_dist / 2 - self._height_of(clade1)
 
             if clade2.is_terminal():
-                clade2.branch_length = min_dist * 1.0 / 2
+                clade2.branch_length = min_dist / 2
             else:
-                clade2.branch_length = min_dist * 1.0 / 2 - self._height_of(clade2)
+                clade2.branch_length = min_dist / 2 - self._height_of(clade2)
 
             # update node list
             clades[min_j] = inner_clade
@@ -693,7 +690,7 @@ class DistanceTreeConstructor(TreeConstructor):
             # set the distances of new node at the index of min_j
             for k in range(0, len(dm)):
                 if k != min_i and k != min_j:
-                    dm[min_j, k] = (dm[min_i, k] + dm[min_j, k]) * 1.0 / 2
+                    dm[min_j, k] = (dm[min_i, k] + dm[min_j, k]) / 2
 
             dm.names[min_j] = "Inner" + str(inner_count)
 
@@ -914,7 +911,7 @@ class NNITreeSearcher(TreeSearcher):
                     left_right = left.clades[1]
                     right_left = right.clades[0]
                     right_right = right.clades[1]
-                    # neightbor 1 (left_left + right_right)
+                    # neighbor 1 (left_left + right_right)
                     del left.clades[1]
                     del right.clades[1]
                     left.clades.append(right_right)

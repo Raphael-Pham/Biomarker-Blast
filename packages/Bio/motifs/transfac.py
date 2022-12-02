@@ -277,7 +277,7 @@ XX
                         )
                         line = line % tuple(
                             [i + 1]
-                            + [motif.counts[l][i] for l in letters]
+                            + [motif.counts[_][i] for _ in letters]
                             + [sequence[i]]
                         )
                         lines.append(line)
@@ -290,10 +290,10 @@ XX
                     if value is not None:
                         if key in multiple_value_keys:
                             for v in value:
-                                line = "%s  %s" % (key, v)
+                                line = f"{key}  {v}"
                                 lines.append(line)
                         else:
-                            line = "%s  %s" % (key, value)
+                            line = f"{key}  {value}"
                             lines.append(line)
                         blank = True
                 if key == "PV":
@@ -309,7 +309,7 @@ XX
                                 value = reference.get(key)
                                 if value is None:
                                     continue
-                                line = "%s  %s" % (key, value)
+                                line = f"{key}  {value}"
                                 lines.append(line)
                                 blank = True
             if blank:

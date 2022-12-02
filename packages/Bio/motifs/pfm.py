@@ -18,6 +18,7 @@ class Record(list):
     """
 
     def __str__(self):
+        """Return a string representation of the motifs in the Record object."""
         return "\n".join(str(motif) for motif in self)
 
 
@@ -347,8 +348,8 @@ def _read_pfm_four_rows(handle):
         row_match_with_nucleotide_letter = row_pattern_with_nucleotide_letter.match(
             line
         )
-        row_match_without_nucleotide_letter = row_pattern_without_nucleotide_letter.match(
-            line
+        row_match_without_nucleotide_letter = (
+            row_pattern_without_nucleotide_letter.match(line)
         )
 
         if name_match:

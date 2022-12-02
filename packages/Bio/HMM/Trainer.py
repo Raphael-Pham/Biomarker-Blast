@@ -142,7 +142,7 @@ class AbstractTrainer:
                 pass
 
             # now calculate the ml and add it to the estimation
-            cur_ml = float(counts[cur_item]) / float(cur_letter_counts)
+            cur_ml = counts[cur_item] / cur_letter_counts
             ml_estimation[cur_item] = cur_ml
 
         return ml_estimation
@@ -278,7 +278,7 @@ class BaumWelchTrainer(AbstractTrainer):
 
         # loop over the possible combinations of state path letters
         for k in self._markov_model.state_alphabet:
-            for l in self._markov_model.transitions_from(k):
+            for l in self._markov_model.transitions_from(k):  # noqa: E741
                 estimated_counts = 0
                 # now loop over the entire training sequence
                 for i in range(len(training_seq.emissions) - 1):
@@ -299,7 +299,7 @@ class BaumWelchTrainer(AbstractTrainer):
                     )
 
                 # update the transition approximation
-                transition_counts[(k, l)] += float(estimated_counts) / training_seq_prob
+                transition_counts[(k, l)] += estimated_counts / training_seq_prob
 
         return transition_counts
 
@@ -341,7 +341,7 @@ class BaumWelchTrainer(AbstractTrainer):
                         expected_times += forward_vars[(k, i)] * backward_vars[(k, i)]
 
                 # add to E_{k}(b)
-                emission_counts[(k, b)] += float(expected_times) / training_seq_prob
+                emission_counts[(k, b)] += expected_times / training_seq_prob
 
         return emission_counts
 
@@ -402,9 +402,7 @@ class KnownStateTrainer(AbstractTrainer):
             try:
                 emission_counts[(cur_state, cur_emission)] += 1
             except KeyError:
-                raise KeyError(
-                    "Unexpected emission (%s, %s)" % (cur_state, cur_emission)
-                )
+                raise KeyError(f"Unexpected emission ({cur_state}, {cur_emission})")
         return emission_counts
 
     def _count_transitions(self, state_seq, transition_counts):
@@ -423,8 +421,6 @@ class KnownStateTrainer(AbstractTrainer):
             try:
                 transition_counts[(cur_state, next_state)] += 1
             except KeyError:
-                raise KeyError(
-                    "Unexpected transition (%s, %s)" % (cur_state, next_state)
-                )
+                raise KeyError(f"Unexpected transition ({cur_state}, {next_state})")
 
         return transition_counts

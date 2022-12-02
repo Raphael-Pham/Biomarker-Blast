@@ -155,7 +155,7 @@ def kcluster(
        k-means algorithm is fully deterministic.
 
     Return values:
-     - clusterid: array containing the number of the cluster to which each
+     - clusterid: array containing the index of the cluster to which each
        item was assigned in the best k-means clustering solution that was
        found in the npass runs;
      - error: the within-cluster sum of distances for the returned k-means
@@ -188,10 +188,9 @@ def kmedoids(distance, nclusters=2, npass=1, initialid=None):
     Keyword arguments:
      - distance: The distance matrix between the items. There are three
        ways in which you can pass a distance matrix:
-       1. a 2D Numerical Python array (in which only the left-lower
-       part of the array will be accessed);
-       2. a 1D Numerical Python array containing the distances
-       consecutively;
+       1. a 2D numpy array (in which only the left-lower part of the array
+       will be accessed);
+       2. a 1D numpy array containing the distances consecutively;
        3. a list of rows containing the lower-triangular part of
        the distance matrix.
 
@@ -226,10 +225,11 @@ def kmedoids(distance, nclusters=2, npass=1, initialid=None):
        In that case, the k-medoids algorithm is fully deterministic.
 
     Return values:
-     - clusterid: array containing the number of the cluster to which each
-       item was assigned in the best k-means clustering solution that was
-       found in the npass runs;
-     - error: the within-cluster sum of distances for the returned k-means
+     - clusterid: array containing the index of the cluster to which each
+       item was assigned in the best k-medoids clustering solution that was
+       found in the npass runs; note that the index of a cluster is the index
+       of the item that is the medoid of the cluster;
+     - error: the within-cluster sum of distances for the returned k-medoids
        clustering solution;
      - nfound: the number of times this solution was found.
     """
@@ -278,10 +278,9 @@ def treecluster(
        - method == 'a': Average pairwise linkage
      - distancematrix:  The distance matrix between the items. There are
        three ways in which you can pass a distance matrix:
-       1. a 2D Numerical Python array (in which only the left-lower
-       part of the array will be accessed);
-       2. a 1D Numerical Python array containing the distances
-       consecutively;
+       1. a 2D numpy array (in which only the left-lower part of the array
+       will be accessed);
+       2. a 1D numpy array containing the distances consecutively;
        3. a list of rows containing the lower-triangular part of
        the distance matrix.
 
@@ -1131,7 +1130,7 @@ class Record:
             while counter < n:
                 for j in index:
                     if clusterids[j] == cluster:
-                        outputfile.write("%s\t%s\n" % (names[j], cluster))
+                        outputfile.write(f"{names[j]}\t{cluster}\n")
                         sortedindex[counter] = j
                         counter += 1
                 cluster += 1
@@ -1163,7 +1162,7 @@ class Record:
             outputfile.write("\tNAME\tGWEIGHT")
             # Now add headers for data columns.
             for j in expindex:
-                outputfile.write("\t%s" % self.expid[j])
+                outputfile.write(f"\t{self.expid[j]}")
             outputfile.write("\n")
             if aid:
                 outputfile.write("AID")
@@ -1178,14 +1177,12 @@ class Record:
                 outputfile.write("\t")
             outputfile.write("\t\t")
             for j in expindex:
-                outputfile.write("\t%f" % eweight[j])
+                outputfile.write(f"\t{eweight[j]:f}")
             outputfile.write("\n")
             for i in geneindex:
                 if gid:
                     outputfile.write("GENE%dX\t" % i)
-                outputfile.write(
-                    "%s\t%s\t%f" % (self.geneid[i], genename[i], gweight[i])
-                )
+                outputfile.write(f"{self.geneid[i]}\t{genename[i]}\t{gweight[i]:f}")
                 for j in expindex:
                     outputfile.write("\t")
                     if mask[i, j]:
