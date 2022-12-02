@@ -1,8 +1,6 @@
 #!/bin/bash
 
 export PYTHONPATH="$PWD/packages"
-#export PATH=$PATH:/$PWD/packages/blast-BLAST_VERSION+/bin
-
 clear
-python markerdb_webscraping.py Usher Syndrome Type I
-python blast_api.py
+python3 markerdb_webscraping.py
+python3 blast_api.py
