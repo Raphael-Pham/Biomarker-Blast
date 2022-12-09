@@ -1,6 +1,7 @@
 from markerdb_webscraping import scrape_marker_db
 from blast_api import get_blast_results
 import sys
+from os.path import exists
 
 def main():
     args = sys.argv[1:]
@@ -36,6 +37,9 @@ def parse_user_input(args):
     
     condition_name = ' '.join(args[start_disease_idx:end_disease_idx])
     file_name = args[start_file_idx:][0]
+
+    if not exists('known_genomes/' + file_name):
+        raise TypeError("File " + file_name + " does not exist within the known_genomes directory.")
 
     return condition_name, file_name
 
