@@ -40,7 +40,7 @@ def parse_user_input(args):
     return condition_name, file_name
 
 def help():
-    print("Usage: python biomarker_blast.py -d [DISEASE_NAME] -f [FILE_NAME]")
+    print("Usage: python3 biomarker_blast.py -d [DISEASE_NAME] -f [FILE_NAME]")
     sys.exit(0)
 
 def display_hsp_results(hsps):
