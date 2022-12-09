@@ -1,5 +1,5 @@
 # Biomarker Blast
-
+Biomarker Blast is a useful tool for clinicians to predict susceptibility for diseases with an alignment comparison to a reference gene, finding genetic biomarkers such as single nucleotide polymorphisms and frameshift mutations.
 
 ### **Prerequisites**
 Python 3.x+ must be installed.
